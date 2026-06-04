@@ -1,0 +1,44 @@
+{
+  // ---> Place this file at: .devcontainer/devcontainer.json
+  "name": "okdp-control-plane-dev-sandbox",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+
+  // This sandbox creates a local Kind cluster, so — like kubocd — it needs a
+  // Docker daemon. docker-in-docker keeps the cluster fully self-contained
+  // inside the devcontainer (nothing leaks onto the host's Docker).
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  // Kind needs privileged tooling; like kubocd, this container runs as root.
+  "remoteUser": "root",
+  "workspaceFolder": "/workspaces/okdp-control-plane-dev-sandbox",
+
+  "mounts": [
+    "source=okdp-devsandbox-gomodcache,target=/go/pkg/mod,type=volume"
+  ],
+
+  // The Kind config maps the cluster's NodePorts to 80/443; forward those, plus
+  // the dev DNS server (UDP 30053).
+  "forwardPorts": [80, 443, 30053],
+  "portsAttributes": {
+    "80": { "label": "Ingress (http)" },
+    "443": { "label": "Ingress (https)" },
+    "30053": { "label": "Dev DNS (UDP)" }
+  },
+
+  "postCreateCommand": "kubectl version --client && kind --version && flux --version",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}

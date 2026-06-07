@@ -1,0 +1,128 @@
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: kubauth
+  namespace: {{ .Values.platformNamespace }}
+spec:
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  package:
+    repository: {{ .Values.packageRepository }}/kubauth
+    tag: "{{ .Values.tags.kubauth }}"
+  parameters:
+    merger:
+      enabled: false
+    ldap:
+      enabled: false
+    ucrd:
+      enabled: true
+      namespace: {{ .Values.platformNamespace }}
+      createNamespace: false
+    audit:
+      enabled: true
+    logger:
+      level: debug
+    oidc:
+      ingress:
+        host: kubauth
+        annotations:
+          nginx.ingress.kubernetes.io/enable-cors: "true"
+          nginx.ingress.kubernetes.io/cors-allow-origin: "https://{{ .Values.consoleHost }}.{{ .Values.ingressSuffix }}"
+          nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, PATCH, OPTIONS"
+          nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+      clients:
+        createNamespace: false
+        namespace: {{ .Values.platformNamespace }}
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: spark-operator
+  namespace: {{ .Values.platformNamespace }}
+spec:
+  package:
+    repository: {{ .Values.packageRepository }}/spark-operator
+    tag: {{ .Values.tags.sparkOperator }}
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: spark-operator
+  createNamespace: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: okdp-spark-secret
+  namespace: {{ .Values.platformNamespace }}
+type: Opaque
+stringData:
+  client-secret: "okdp-spark-shared-client-secret-change-me"
+---
+apiVersion: kubauth.kubotal.io/v1alpha1
+kind: OidcClient
+metadata:
+  name: okdp-spark
+  namespace: {{ .Values.platformNamespace }}
+spec:
+  displayName: "OKDP Spark"
+  description: "OIDC Client for Spark History Server and Spark UIs"
+  public: false
+  secrets:
+    - name: okdp-spark-secret
+      key: client-secret
+      hashed: false
+  entryURL: "https://kubauth.{{ .Values.ingressSuffix }}"
+  accessTokenLifespan: 1h0m0s
+  idTokenLifespan: 1h0m0s
+  refreshTokenLifespan: 1h0m0s
+  redirectURIs:
+    - "https://*.{{ .Values.ingressSuffix }}/"
+    - "https://*.{{ .Values.ingressSuffix }}"
+  postLogoutURL: "https://kubauth.{{ .Values.ingressSuffix }}"
+  grantTypes:
+    - "authorization_code"
+    - "refresh_token"
+  responseTypes:
+    - "id_token"
+    - "code"
+    - "token"
+    - "id_token token"
+    - "code id_token"
+    - "code token"
+    - "code id_token token"
+  scopes:
+    - "openid"
+    - "profile"
+    - "email"
+    - "groups"
+    - "offline_access"
+  forceOpenIdScope: true
+---
+apiVersion: kubauth.kubotal.io/v1alpha1
+kind: User
+metadata:
+  name: {{ .Values.admin.user }}
+  namespace: {{ .Values.platformNamespace }}
+spec:
+  name: {{ .Values.admin.name | quote }}
+  emails:
+    - {{ .Values.admin.email }}
+  passwordHash: {{ .Values.admin.passwordHash | quote }}
+---
+apiVersion: kubauth.kubotal.io/v1alpha1
+kind: Group
+metadata:
+  name: {{ .Values.admin.group }}
+  namespace: {{ .Values.platformNamespace }}
+spec:
+  comment: Administrator group
+---
+apiVersion: kubauth.kubotal.io/v1alpha1
+kind: GroupBinding
+metadata:
+  name: admin-{{ .Values.admin.user }}
+  namespace: {{ .Values.platformNamespace }}
+spec:
+  user: {{ .Values.admin.user }}
+  group: {{ .Values.admin.group }}

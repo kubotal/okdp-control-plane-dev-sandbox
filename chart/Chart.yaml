@@ -1,0 +1,6 @@
+apiVersion: v2
+name: okdp-sandbox
+description: Umbrella chart installing the whole OKDP dev sandbox (infrastructure, platform and in-cluster control plane) through kubocd Releases
+type: application
+version: 0.1.0
+appVersion: 0.1.0

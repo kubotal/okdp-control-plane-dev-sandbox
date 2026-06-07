@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────────────────────
+# OKDP sandbox umbrella — single source of truth for the install
+# ─────────────────────────────────────────────────────────────
+
+# -- Ingress / DNS suffix every service is exposed under (*.<suffix>).
+ingressSuffix: okdp.dev-sandbox
+# -- Ingress class name.
+ingressClassName: nginx
+
+# -- OCI registry holding all OKDP packages.
+packageRepository: quay.io/okdp/packages-dev
+
+# -- kubocd Context name (must match what kubocd-ctrl watches).
+contextName: default
+# -- kubocd Context namespace.
+contextNamespace: kubocd-system
+
+# -- Platform namespace hosting kubauth, identities, OidcClients and the control plane.
+platformNamespace: okdp-system
+
+# -- Self-signed CA cluster-issuer name.
+clusterIssuer: default-issuer
+
+# -- Component package tags.
+tags:
+  kubauth: "0.3.0-fix-userinfo-26052026"
+  sparkOperator: "0.3.0"
+  certManager: "1.17.1-p06"
+  ingressNginx: "4.12.1-p03"
+  dnsServer: "1.0.0-p03"
+  externalSecrets: "0.1.0"
+  metricsServer: "0.1.0"
+  corednsPatch: "0.1.0"
+  seaweedfs: "0.1.0"
+  vault: "0.1.1"
+  okdpServer: "0.1.0"
+  okdpUi: "0.1.0"
+
+# -- Console (frontend) host prefix, exposed as https://<consoleHost>.<ingressSuffix>.
+consoleHost: console
+
+# -- Admin user (passwordHash is the bcrypt hash of "password").
+admin:
+  user: useradmin
+  name: Administrator
+  email: useradmin@okdp.dev-sandbox
+  passwordHash: "$2a$10$3gH1eFQ2zm4Y3EoWqkKK0O.ECVSvQaz7Ox21yY4Hp2F/B3qWuGWIO"
+  group: admins

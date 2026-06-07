@@ -1,0 +1,184 @@
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: cert-manager
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  description: "Certificate management for Kubernetes with trust-manager and issuers"
+  package:
+    repository: {{ .Values.packageRepository }}/cert-manager
+    tag: {{ .Values.tags.certManager }}
+    interval: 30m
+    timeout: 10m
+  parameters:
+    trust:
+      enabled: true
+      bundle:
+        name: certs-bundle
+        target:
+          configMap:
+            enabled: true
+            key: "root-certs.pem"
+          secret:
+            enabled: true
+    issuers:
+      enabled: true
+      selfSignedClusterIssuers:
+        - name: {{ .Values.clusterIssuer }}
+          certificate:
+            commonName: "OKDP Control Plane Sandbox Self-Signed CA"
+            organization: "OKDP"
+            country: "FR"
+            validity: "8760h"
+            algorithm: "ECDSA"
+            size: 256
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: cert-manager
+  createNamespace: true
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: ingress-nginx
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  description: "NGINX Ingress Controller for HTTP/HTTPS routing"
+  package:
+    repository: {{ .Values.packageRepository }}/ingress-nginx
+    tag: {{ .Values.tags.ingressNginx }}
+    interval: 30m
+    timeout: 10m
+  parameters:
+    mode: "nodePort"
+    httpPort: 30080
+    httpsPort: 30443
+  targetNamespace: ingress-nginx
+  createNamespace: true
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: dns-server
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  description: "DNS Server - Lightweight DNS server for local development"
+  createNamespace: true
+  package:
+    interval: 30m
+    repository: {{ .Values.packageRepository }}/dns-server
+    tag: {{ .Values.tags.dnsServer }}
+    timeout: 10m
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: dns-server
+  parameters:
+    target: 127.0.0.1
+    nodePort: 30053
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: coredns-patch
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  description: "CoreDNS configuration patch for local domain resolution"
+  package:
+    repository: {{ .Values.packageRepository }}/coredns-patch
+    tag: {{ .Values.tags.corednsPatch }}
+    interval: 30m
+    timeout: 10m
+  parameters:
+    ingressService: "ingress-nginx-main-controller.ingress-nginx.svc.cluster.local"
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: kube-system
+  createNamespace: false
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: metrics-server
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  description: "Kubernetes Metrics Server - feeds kubectl top and the OKDP Console Resource usage panels"
+  package:
+    repository: {{ .Values.packageRepository }}/metrics-server
+    tag: {{ .Values.tags.metricsServer }}
+    interval: 30m
+    timeout: 5m
+  parameters:
+    insecureKubeletTls: true
+    metricResolution: "15s"
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: kube-system
+  createNamespace: false
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: external-secrets
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  description: "External Secrets Operator for syncing secrets from external APIs"
+  package:
+    repository: {{ .Values.packageRepository }}/external-secrets
+    tag: {{ .Values.tags.externalSecrets }}
+    interval: 30m
+    timeout: 10m
+  parameters:
+    installCRDs: true
+    webhook:
+      enabled: true
+    certController:
+      enabled: true
+  targetNamespace: external-secrets
+  createNamespace: true
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: vault
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  description: "Hashicorp Vault for secrets management"
+  package:
+    repository: {{ .Values.packageRepository }}/vault
+    tag: {{ .Values.tags.vault }}
+    interval: 30m
+    timeout: 10m
+  parameters:
+    dev: true
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: vault-system
+  createNamespace: true
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: seaweedfs
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  description: "SeaweedFS distributed object storage (S3-compatible) for the sandbox"
+  package:
+    repository: {{ .Values.packageRepository }}/seaweedfs
+    tag: {{ .Values.tags.seaweedfs }}
+    interval: 30m
+    timeout: 10m
+  parameters:
+    accessKey: okdp-admin
+    secretKey: okdp-admin-secret-change-me
+    volumeSize: 10Gi
+    filerSize: 2Gi
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: seaweedfs-system
+  createNamespace: true

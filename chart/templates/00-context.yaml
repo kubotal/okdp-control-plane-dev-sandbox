@@ -1,0 +1,128 @@
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Context
+metadata:
+  name: {{ .Values.contextName }}
+  namespace: {{ .Values.contextNamespace }}
+spec:
+  context:
+    cluster: {}
+    ingress:
+      suffix: {{ .Values.ingressSuffix }}
+      className: {{ .Values.ingressClassName }}
+
+    certificateIssuer:
+      public: {{ .Values.clusterIssuer }}
+
+    certificateIssuers:
+      selfSigned:
+        name: {{ .Values.clusterIssuer }}
+
+    networkPolicies: false
+
+    storageClass:
+      workspace: standard
+
+    kubauth:
+      namespace: {{ .Values.platformNamespace }}
+
+    jupyter:
+      profiles:
+        jupyterlab:
+          images:
+            - label: "Data Science (Python + Spark)"
+              image: quay.io/okdp/jupyter/all-spark-notebook:spark-3.5.6-python-3.11-java-17-scala-2.12
+            - label: "ML/AI (PyTorch)"
+              image: quay.io/okdp/jupyter/ml-notebook:latest
+        vscode:
+          images:
+            - label: "SciPy (Python)"
+              image: quay.io/jupyterhub/singleuser:4.1.6
+            - label: "Data Science (Python + R + Julia)"
+              image: jupyter/datascience-notebook:latest
+        rstudio:
+          images:
+            - label: "R Notebook"
+              image: jupyter/r-notebook:latest
+            - label: "Data Science (R + Python + Julia)"
+              image: jupyter/datascience-notebook:latest
+      auth:
+        oidc:
+          authorizeUrl: "https://kubauth.{{ .Values.ingressSuffix }}/oauth2/auth"
+          tokenUrl: "https://kubauth.{{ .Values.ingressSuffix }}/oauth2/token"
+          userinfoUrl: "https://kubauth.{{ .Values.ingressSuffix }}/userinfo"
+          scope: "openid profile groups"
+          insecureSkipVerify: true
+
+    sparkOperator:
+      image:
+        registry: ghcr.io
+        repository: kubeflow/spark-operator/controller
+        tag: "2.5.0"
+      spark:
+        defaultVersion: "3.5.6"
+        images:
+          - label: "Spark 3.5.6 (Python + Hadoop + OKDP)"
+            image: quay.io/okdp/spark-py:spark-3.5.6-python-3.11-scala-2.12-java-17
+          - label: "Spark 3.5.6 (Java/Scala + OKDP)"
+            image: quay.io/okdp/spark:spark-3.5.6-scala-2.12-java-17
+        defaults:
+          driver:
+            cores: 1
+            memory: "1g"
+          executor:
+            instances: 2
+            cores: 1
+            memory: "1g"
+        historyServer:
+          image: quay.io/kubotal/spark-images:spark-3.5.6-scala-2.12-java-17-authfilter-1.4.3-SNAPSHOT-jar7875499e
+        eventLog:
+          defaultDir: "file:///mnt/spark-events"
+          pvcStorageClass: standard
+        auth:
+          issuerUri: "https://kubauth.{{ .Values.ingressSuffix }}"
+          scope: "openid profile email groups"
+          cookieEncryptionKey: "okdp-spark-history-key-v3rst-32b"
+        webProxy:
+          image: quay.io/okdp/spark-web-proxy
+          tag: "0.1.0"
+
+    okdp:
+      packageRepository: {{ .Values.packageRepository }}
+
+      services:
+        - name: jupyterhub
+          versions: ["0.8.0", "0.7.0", "0.6.0", "0.5.0", "0.4.0", "0.3.0", "0.2.0", "0.1.0"]
+          default: "0.8.0"
+          description: "Multi-user Jupyter notebook environment with OIDC authentication"
+          icon: pi-server
+          category: data-science
+        - name: spark-history-server
+          versions: ["0.19.0", "0.18.0"]
+          default: "0.19.0"
+          description: "Spark History Server with OIDC auth and Spark Web Proxy for live job monitoring"
+          icon: pi-bolt
+          category: data-processing
+        - name: trino
+          versions: ["0.3.0", "0.2.0", "0.1.0"]
+          default: "0.3.0"
+          description: "Distributed SQL query engine (Trino 480) with OAuth2 + JWT auth via Kubauth"
+          icon: pi-search
+          category: data-querying
+        - name: polaris
+          versions: ["0.2.0", "0.1.0"]
+          default: "0.2.0"
+          description: "Apache Polaris — Iceberg REST catalog with OIDC + CA trust"
+          icon: pi-database
+          category: data-catalog
+        - name: superset
+          versions: ["0.2.0", "0.1.0"]
+          default: "0.2.0"
+          description: "Apache Superset with kubauth OIDC, role mapping, feature flags"
+          icon: pi-chart-bar
+          category: data-visualization
+        - name: airflow
+          versions: ["0.2.0", "0.1.0"]
+          default: "0.2.0"
+          description: "Apache Airflow workflow orchestrator with KubernetesExecutor, OIDC, git-sync"
+          icon: pi-sitemap
+          category: data-orchestration

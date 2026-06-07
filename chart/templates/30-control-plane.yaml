@@ -1,0 +1,38 @@
+# In-cluster control-plane: backend API + frontend console.
+# These replace the former local `go run` + `npm start` workflow.
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: okdp-server
+  namespace: {{ .Values.platformNamespace }}
+spec:
+  description: "OKDP control-plane backend API server"
+  package:
+    repository: {{ .Values.packageRepository }}/okdp-server
+    tag: "{{ .Values.tags.okdpServer }}"
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: {{ .Values.platformNamespace }}
+  createNamespace: false
+  parameters:
+    uiHost: {{ .Values.consoleHost }}
+---
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: okdp-ui
+  namespace: {{ .Values.platformNamespace }}
+spec:
+  description: "OKDP control-plane frontend console"
+  package:
+    repository: {{ .Values.packageRepository }}/okdp-ui
+    tag: "{{ .Values.tags.okdpUi }}"
+  contexts:
+    - name: {{ .Values.contextName }}
+      namespace: {{ .Values.contextNamespace }}
+  targetNamespace: {{ .Values.platformNamespace }}
+  createNamespace: false
+  parameters:
+    host: {{ .Values.consoleHost }}
+    backendService: okdp-server

@@ -151,37 +151,24 @@ Vault ships with an Ingress and is available at:
 *   **URL**: `https://vault.okdp.dev-sandbox`
 *   **Mode**: Dev (default root token)
 
-## 4. Local Development
+## 4. Control Plane (server + console)
 
-This sandbox provides the base infrastructure (Kubernetes + OIDC) needed to develop the platform's other components.
+The backend and the console run **in-cluster**, deployed from the images published by
+CI with their Helm charts (`chart/` in each repo). Clone each repo, then deploy its chart:
 
-*   **Backend (`okdp-control-plane-server-poc`)**:
-
-    If you haven't already, clone the repo:
-    `https://github.com/OKDP/okdp-control-plane-server-poc.git`
+*   **Backend (`okdp-control-plane-server`)** — from the repo root:
 
     ```bash
-    cd okdp-control-plane-server-poc
-
-    # Point kubectl at the cluster (Kind)
-    kind get kubeconfig --name okdp-dev > ~/.kube/okdp-dev-config
-    export KUBECONFIG=~/.kube/okdp-dev-config
-
-    # Start the server
-    go run cmd/server/main.go
+    helm install okdp-server ./chart -n okdp-system \
+      --set image.repository=quay.io/kubotal/images/okdp-server --set image.tag=0.1.0
     ```
-    > The server listens on `http://localhost:8093`.
 
-*   **Frontend (`okdp-control-plane-ui-poc`)**:
-
-    If you haven't already, clone the repo:
-    `https://github.com/OKDP/okdp-control-plane-ui-poc.git`
+*   **Console (`okdp-control-plane-ui`)** — from the repo root (nginx serves the build and proxies `/api`, exposed via ingress):
 
     ```bash
-    cd okdp-control-plane-ui-poc
-    npm install
-    npm start
+    helm install okdp-ui ./chart -n okdp-system \
+      --set image.repository=quay.io/kubotal/images/okdp-ui --set image.tag=0.1.0 \
+      --set ingress.host=console.okdp.dev-sandbox
     ```
-    > The app is available at `http://localhost:4200`.
 
-    💡 **Login:** use `useradmin` / `password` (created in step 2.C).
+Console: `https://console.okdp.dev-sandbox` — login `useradmin` / `password` (created in step 2.C).

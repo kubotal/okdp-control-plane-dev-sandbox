@@ -28,7 +28,7 @@ spec:
         host: kubauth
         annotations:
           nginx.ingress.kubernetes.io/enable-cors: "true"
-          nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:4200"
+          nginx.ingress.kubernetes.io/cors-allow-origin: "https://console.okdp.dev-sandbox"
           nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, PATCH, OPTIONS"
           nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
       clients:

@@ -4,18 +4,18 @@ metadata:
   name: okdp-app
   namespace: okdp-system
 spec:
-  displayName: "OKDP App (Local)"
-  description: "OIDC Client for Local Development"
+  displayName: "OKDP Console"
+  description: "OIDC client for the OKDP control-plane console"
   public: true
-  entryURL: "http://localhost:4200"
+  entryURL: "https://console.okdp.dev-sandbox"
   accessTokenLifespan: 1h0m0s
   idTokenLifespan: 1h0m0s
   refreshTokenLifespan: 1h0m0s
   redirectURIs:
-    - "http://localhost:4200/"
-    - "http://localhost:4200"
-    - "http://localhost:4200/silent-refresh.html"
-  postLogoutURL: "http://localhost:4200"
+    - "https://console.okdp.dev-sandbox/"
+    - "https://console.okdp.dev-sandbox"
+    - "https://console.okdp.dev-sandbox/silent-refresh.html"
+  postLogoutURL: "https://console.okdp.dev-sandbox"
   grantTypes:
     - "authorization_code"
     - "refresh_token"

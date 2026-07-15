@@ -7,11 +7,11 @@ spec:
   # Injecte le claim email dans les tokens OIDC (Langfuse et autres
   # applications SSO exigent un email valide dans le profil).
   claims:
-    email: useradmin@okdp.dev-sandbox
+    email: useradmin@okdp.local
     email_verified: true
   name: Administrator
   emails:
-    - useradmin@okdp.dev-sandbox
+    - useradmin@okdp.local
   passwordHash: "$2a$10$3gH1eFQ2zm4Y3EoWqkKK0O.ECVSvQaz7Ox21yY4Hp2F/B3qWuGWIO"
 ---
 apiVersion: kubauth.kubotal.io/v1alpha1

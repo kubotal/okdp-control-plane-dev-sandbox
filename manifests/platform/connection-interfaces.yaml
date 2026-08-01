@@ -1,0 +1,26 @@
+# Connection contracts (KuboCD Interfaces) for the external resources a project
+# declares from the console: PostgreSQL, MySQL/MariaDB and S3-compatible object
+# storage. Without them a Connection is accepted but reconciles to
+# "Interface <type> unknown".
+#
+# interfaceKind follows the KuboCD version installed. The image this sandbox
+# runs exposes a single, cluster-scoped `Interface`, which is the default. Once
+# the connection2 work lands, `Interface` becomes namespaced and these
+# namespace-independent contracts move to `ClusterInterface` — set the parameter
+# then, no manifest restructuring needed.
+apiVersion: kubocd.kubotal.io/v1alpha1
+kind: Release
+metadata:
+  name: connection-interfaces
+  namespace: okdp-system
+spec:
+  package:
+    repository: quay.io/okdp/packages-dev/connection-interfaces
+    tag: 0.1.0
+  contexts:
+    - name: default
+      namespace: kubocd-system
+  targetNamespace: okdp-system
+  createNamespace: false
+  parameters:
+    interfaceKind: Interface

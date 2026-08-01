@@ -99,6 +99,12 @@ This sandbox spins up a local Kubernetes (Kind) cluster with the essential compo
     kubectl apply -f manifests/platform/oidc-client-spark.yaml
     ```
 
+    ```bash
+    # Connection contracts, so connections created from the console reconcile
+    kubectl apply -f manifests/platform/connection-interfaces.yaml
+    kubectl wait --for=jsonpath='{.status.phase}'=READY release/connection-interfaces -n okdp-system --timeout=180s
+    ```
+
 ### C. Initialize Identity (Admin User)
 
 Once Kubauth is up, create the admin user and its group:

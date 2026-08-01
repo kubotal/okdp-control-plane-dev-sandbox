@@ -14,6 +14,7 @@ spec:
   redirectURIs:
     - "https://console.okdp.dev-sandbox"
     - "https://console.okdp.dev-sandbox/"
+    - "https://console.okdp.dev-sandbox/silent-refresh.html"
   postLogoutURL: "https://console.okdp.dev-sandbox"
   grantTypes:
     - "authorization_code"

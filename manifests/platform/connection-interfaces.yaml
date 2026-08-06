@@ -3,11 +3,9 @@
 # storage. Without them a Connection is accepted but reconciles to
 # "Interface <type> unknown".
 #
-# interfaceKind follows the KuboCD version installed. The image this sandbox
-# runs exposes a single, cluster-scoped `Interface`, which is the default. Once
-# the connection2 work lands, `Interface` becomes namespaced and these
-# namespace-independent contracts move to `ClusterInterface` — set the parameter
-# then, no manifest restructuring needed.
+# These contracts belong to no namespace, so they ride the cluster-scoped
+# kind: ClusterInterface on the connections-unified KuboCD this sandbox runs
+# (where Interface is namespaced).
 apiVersion: kubocd.kubotal.io/v1alpha1
 kind: Release
 metadata:
@@ -23,4 +21,4 @@ spec:
   targetNamespace: okdp-system
   createNamespace: false
   parameters:
-    interfaceKind: Interface
+    interfaceKind: ClusterInterface
